@@ -99,7 +99,7 @@ from guv_calcs import Room, Polygon2D
 floor = Polygon2D(vertices=[
     (0, 0), (4, 0), (4, 2), (2, 2), (2, 4), (0, 4)
 ])
-room = Room(floor_polygon=floor, z=2.7)
+room = Room(polygon=floor, z=2.7)
 ```
 
 ### Safety Compliance Check
