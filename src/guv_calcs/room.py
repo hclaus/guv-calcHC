@@ -879,10 +879,19 @@ class Room:
 
     def _update_dimensions(self, x=None, y=None, z=None, polygon=None):
         """Update dimensions and rebuild dependent objects."""
-        if polygon is not None and self.dim.is_polygon:
+        if polygon is not None:
             self.dim = self.dim.with_(z=z, polygon=polygon)
-        elif not self.dim.is_polygon:
-            self.dim = self.dim.with_(x=x, y=y, z=z)
+            self._explicit_polygon = True
+        elif x is not None or y is not None:
+            is_revert = (x is not None and y is not None) or not self.is_polygon
+            if is_revert:
+                new_x = x if x is not None else self.dim.x
+                new_y = y if y is not None else self.dim.y
+                poly_rect = Polygon2D.rectangle(new_x, new_y)
+                self.dim = self.dim.with_(z=z, polygon=poly_rect)
+                self._explicit_polygon = False
+            else:
+                self.dim = self.dim.with_(z=z)
         else:
             self.dim = self.dim.with_(z=z)
         self._update_standard_surfaces()
