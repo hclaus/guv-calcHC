@@ -10,6 +10,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
+            --bg-gradient: linear-gradient(135deg, #f8fafc, #f1f5f9, #e2e8f0);
+            --panel-bg: rgba(255, 255, 255, 0.75);
+            --panel-border: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --accent: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.2);
+            --accent-hover: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --canvas-bg: #ffffff;
+            --textarea-bg: #f8fafc;
+            --textarea-text: #0f172a;
+            --header-bg: rgba(255, 255, 255, 0.8);
+            --editor-bg: rgba(241, 245, 249, 0.5);
+            --overlay-badge-bg: rgba(255, 255, 255, 0.9);
+            --sidebar-bg: rgba(255, 255, 255, 0.85);
+            --select-bg: #ffffff;
+            --btn-bg: rgba(15, 23, 42, 0.05);
+            --btn-border: rgba(15, 23, 42, 0.1);
+        }
+
+        body.dark-theme {
             --bg-gradient: linear-gradient(135deg, #0f172a, #020617, #1e1b4b);
             --panel-bg: rgba(30, 41, 59, 0.45);
             --panel-border: rgba(255, 255, 255, 0.08);
@@ -19,11 +46,16 @@
             --accent: #6366f1;
             --accent-glow: rgba(99, 102, 241, 0.4);
             --accent-hover: #4f46e5;
-            --success: #10b981;
-            --danger: #ef4444;
-            --radius-lg: 16px;
-            --radius-md: 10px;
-            --radius-sm: 6px;
+            --canvas-bg: rgba(2, 6, 23, 0.5);
+            --textarea-bg: #090d16;
+            --textarea-text: #38bdf8;
+            --header-bg: rgba(15, 23, 42, 0.6);
+            --editor-bg: rgba(2, 6, 23, 0.5);
+            --overlay-badge-bg: rgba(15, 23, 42, 0.85);
+            --sidebar-bg: rgba(15, 23, 42, 0.8);
+            --select-bg: #0f172a;
+            --btn-bg: rgba(255, 255, 255, 0.05);
+            --btn-border: rgba(255, 255, 255, 0.1);
         }
 
         * {
@@ -40,17 +72,19 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         header {
             padding: 16px 24px;
-            background: rgba(15, 23, 42, 0.6);
+            background: var(--header-bg);
             border-bottom: 1px solid var(--panel-border);
             backdrop-filter: blur(12px);
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 10;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         header h1 {
@@ -63,10 +97,16 @@
         }
 
         header h1 span {
-            background: linear-gradient(90deg, #818cf8, #a78bfa);
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 700;
+        }
+
+        body.dark-theme header h1 span {
+            background: linear-gradient(90deg, #818cf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .subtitle {
@@ -84,17 +124,27 @@
 
         .editor-container {
             position: relative;
-            background: rgba(2, 6, 23, 0.5);
+            background: var(--editor-bg);
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
             user-select: none;
+            transition: background 0.3s ease;
         }
 
         canvas {
             display: block;
             cursor: crosshair;
+            background: var(--canvas-bg);
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--panel-border);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        body.dark-theme canvas {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .canvas-overlay {
@@ -107,27 +157,31 @@
         }
 
         .overlay-badge {
-            background: rgba(15, 23, 42, 0.85);
+            background: var(--overlay-badge-bg);
             border: 1px solid var(--panel-border);
             padding: 8px 12px;
             border-radius: var(--radius-sm);
             font-size: 0.85rem;
             pointer-events: auto;
             backdrop-filter: blur(8px);
+            color: var(--text-primary);
+            transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         .sidebar {
-            background: rgba(15, 23, 42, 0.8);
+            background: var(--sidebar-bg);
             border-left: 1px solid var(--panel-border);
             backdrop-filter: blur(20px);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         .sidebar-section {
             padding: 20px;
             border-bottom: 1px solid var(--panel-border);
+            transition: border-color 0.3s ease;
         }
 
         .section-title {
@@ -148,8 +202,8 @@
 
         .btn {
             flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
             color: var(--text-primary);
             padding: 10px 14px;
             border-radius: var(--radius-md);
@@ -165,13 +219,14 @@
         }
 
         .btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent);
         }
 
         .btn-primary {
             background: var(--accent);
             border-color: var(--accent);
+            color: #ffffff;
         }
 
         .btn-primary:hover {
@@ -214,7 +269,7 @@
         }
 
         select {
-            background: #0f172a;
+            background: var(--select-bg);
             border: 1px solid var(--panel-border);
             color: var(--text-primary);
             padding: 8px 12px;
@@ -224,6 +279,7 @@
             outline: none;
             cursor: pointer;
             width: 120px;
+            transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         .code-output-container {
@@ -245,16 +301,17 @@
         .code-textarea {
             flex: 1;
             width: 100%;
-            background: #090d16;
+            background: var(--textarea-bg);
             border: 1px solid var(--panel-border);
             border-radius: var(--radius-md);
             padding: 12px;
-            color: #38bdf8;
+            color: var(--textarea-text);
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
             resize: none;
             outline: none;
             line-height: 1.5;
+            transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         .instructions-list {
@@ -274,7 +331,7 @@
             color: #fff;
             padding: 10px 16px;
             border-radius: var(--radius-sm);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             font-size: 0.9rem;
             font-weight: 500;
             opacity: 0;
@@ -297,8 +354,13 @@
             <h1><span>GUV Calcs</span> Polygon Footprint Builder</h1>
             <div class="subtitle">Draw closed 2D shapes visually for non-rectangular GUV room footprints</div>
         </div>
-        <div style="font-size: 0.85rem; color: var(--text-secondary)">
-            Standalone Utility
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="btn" id="btn-theme-toggle" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm); min-width: 110px;">
+                ☀️ Light Mode
+            </button>
+            <div style="font-size: 0.85rem; color: var(--text-secondary)">
+                Standalone Utility
+            </div>
         </div>
     </header>
 
@@ -405,14 +467,38 @@
         let offsetX = 0; // translation in pixels
         let offsetY = 0; // translation in pixels
 
-        // Colors
-        const COLOR_GRID = 'rgba(255, 255, 255, 0.05)';
-        const COLOR_AXIS = 'rgba(255, 255, 255, 0.15)';
-        const COLOR_POLY_LINE = '#818cf8';
-        const COLOR_POLY_FILL = 'rgba(129, 140, 248, 0.15)';
-        const COLOR_VERT_NORMAL = '#6366f1';
-        const COLOR_VERT_FIRST = '#10b981';
-        const COLOR_VERT_HOVER = '#f43f5e';
+        // Colors and Themes
+        let currentTheme = 'light'; // default theme is light!
+
+        function getThemeColors() {
+            if (currentTheme === 'light') {
+                return {
+                    grid: 'rgba(15, 23, 42, 0.06)',
+                    axis: 'rgba(15, 23, 42, 0.25)',
+                    polyLine: '#4f46e5',
+                    polyFill: 'rgba(79, 70, 229, 0.1)',
+                    vertNormal: '#6366f1',
+                    vertFirst: '#10b981',
+                    vertHover: '#f43f5e',
+                    axisText: '#475569',
+                    ticks: 'rgba(15, 23, 42, 0.5)',
+                    tickLine: 'rgba(15, 23, 42, 0.15)'
+                };
+            } else {
+                return {
+                    grid: 'rgba(255, 255, 255, 0.05)',
+                    axis: 'rgba(255, 255, 255, 0.15)',
+                    polyLine: '#818cf8',
+                    polyFill: 'rgba(129, 140, 248, 0.15)',
+                    vertNormal: '#818cf8',
+                    vertFirst: '#10b981',
+                    vertHover: '#f43f5e',
+                    axisText: '#94a3b8',
+                    ticks: 'rgba(255, 255, 255, 0.4)',
+                    tickLine: 'rgba(255, 255, 255, 0.15)'
+                };
+            }
+        }
 
         function initCanvas() {
             const rect = container.getBoundingClientRect();
@@ -465,7 +551,8 @@
         }
 
         function drawGrid() {
-            ctx.strokeStyle = COLOR_GRID;
+            const colors = getThemeColors();
+            ctx.strokeStyle = colors.grid;
             ctx.lineWidth = 1;
 
             // Determine spacing in meters: 1m or 0.5m
@@ -504,7 +591,8 @@
         }
 
         function drawAxes() {
-            ctx.strokeStyle = COLOR_AXIS;
+            const colors = getThemeColors();
+            ctx.strokeStyle = colors.axis;
             ctx.lineWidth = 2;
 
             // Draw X-axis
@@ -525,12 +613,12 @@
 
             // Draw origin marker (0,0)
             const originPix = metersToPixels(0, 0);
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = colors.axisText;
             ctx.font = '500 12px "Outfit", sans-serif';
             ctx.fillText('Origin (0,0)', originPix.x + 8, originPix.y + 16);
 
             // Draw ticks on X axis
-            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.fillStyle = colors.ticks;
             ctx.font = '400 10px "Outfit", sans-serif';
             ctx.textAlign = 'center';
             for (let i = 1; i <= maxRoomWidth; i++) {
@@ -538,6 +626,7 @@
                 ctx.beginPath();
                 ctx.moveTo(tick.x, tick.y - 4);
                 ctx.lineTo(tick.x, tick.y + 4);
+                ctx.strokeStyle = colors.tickLine;
                 ctx.stroke();
                 ctx.fillText(i + 'm', tick.x, tick.y + 16);
             }
@@ -550,6 +639,7 @@
                 ctx.beginPath();
                 ctx.moveTo(tick.x - 4, tick.y);
                 ctx.lineTo(tick.x + 4, tick.y);
+                ctx.strokeStyle = colors.tickLine;
                 ctx.stroke();
                 ctx.fillText(i + 'm', tick.x - 8, tick.y);
             }
@@ -558,6 +648,7 @@
         function drawPolygon() {
             if (vertices.length === 0) return;
 
+            const colors = getThemeColors();
             ctx.beginPath();
             const startPix = metersToPixels(vertices[0].x, vertices[0].y);
             ctx.moveTo(startPix.x, startPix.y);
@@ -569,17 +660,18 @@
 
             if (isClosed) {
                 ctx.closePath();
-                ctx.fillStyle = COLOR_POLY_FILL;
+                ctx.fillStyle = colors.polyFill;
                 ctx.fill();
             }
 
-            ctx.strokeStyle = COLOR_POLY_LINE;
+            ctx.strokeStyle = colors.polyLine;
             ctx.lineWidth = 3;
             ctx.lineJoin = 'round';
             ctx.stroke();
         }
 
         function drawHandles() {
+            const colors = getThemeColors();
             for (let i = 0; i < vertices.length; i++) {
                 const pix = metersToPixels(vertices[i].x, vertices[i].y);
                 
@@ -587,23 +679,26 @@
                 ctx.arc(pix.x, pix.y, i === hoveredIndex ? 9 : 6, 0, Math.PI * 2);
 
                 if (i === hoveredIndex) {
-                    ctx.fillStyle = COLOR_VERT_HOVER;
+                    ctx.fillStyle = colors.vertHover;
                     ctx.strokeStyle = 'rgba(244, 63, 94, 0.4)';
                     ctx.lineWidth = 6;
                     ctx.stroke();
                 } else if (i === 0) {
-                    ctx.fillStyle = COLOR_VERT_FIRST;
+                    ctx.fillStyle = colors.vertFirst;
                     ctx.strokeStyle = 'rgba(16, 185, 129, 0.3)';
                     ctx.lineWidth = 4;
                     ctx.stroke();
                 } else {
-                    ctx.fillStyle = COLOR_VERT_NORMAL;
+                    ctx.fillStyle = colors.vertNormal;
+                    ctx.strokeStyle = currentTheme === 'light' ? 'rgba(79, 70, 229, 0.25)' : 'rgba(129, 140, 248, 0.35)';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
                 }
 
                 ctx.fill();
 
                 // Draw index number
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = colors.axisText;
                 ctx.font = '600 10px "JetBrains Mono", monospace';
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'bottom';
@@ -811,6 +906,21 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 2000);
+        });
+
+        // Theme Switcher Button Handler
+        const btnThemeToggle = document.getElementById('btn-theme-toggle');
+        btnThemeToggle.addEventListener('click', () => {
+            if (currentTheme === 'light') {
+                document.body.classList.add('dark-theme');
+                currentTheme = 'dark';
+                btnThemeToggle.innerHTML = '🌙 Dark Mode';
+            } else {
+                document.body.classList.remove('dark-theme');
+                currentTheme = 'light';
+                btnThemeToggle.innerHTML = '☀️ Light Mode';
+            }
+            draw();
         });
 
         // Handle window resizing
