@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-06-14
+
+### Added
+- Standalone graphical 2D polygon footprint builder tool (`polygon_builder.html`).
+- `values_to_grid` method in `SurfaceGrid` and `VolumeGrid` classes to map flat arrays back to 2D/3D shapes with `np.nan` values for points outside the polygon.
+- Masking for points outside the room polygon footprint in `RoomPlotter.plot_plane()` and `RoomPlotter.update_plane()` to support correct 3D plotting.
+
+### Changed
+- `Surface._calculate_values` and `Surface._calculate_coordinates` now support dynamic/arbitrary grid dimensions, resolving index-collapse bugs when computing interreflections for non-rectangular rooms.
+- Default number of wall points changed to 20 for reflectance meshes (`default_nums = {surface: 10 if surface in ("floor", "ceiling") else 20 for surface in keys}`).
+
+### Fixed
+- Fixed generate report (`io._reporting._build_room_rows`) for polygon rooms:
+  - Dynamically output custom wall reflectance headers instead of hardcoded cardinal directions (`Floor`, `Ceiling`, `Wall 0`, `Wall 1`, etc.).
+  - Output bounding box dimensions, volume, floor area, and the full polygon footprint vertex list in the parameter table.
+  - Rectangular rooms remain byte-for-byte identical to the legacy format.
+- Fixed polygon `_update_dimensions` in `Room` to handle transitions between rectangular bounding boxes and explicit polygon footprints cleanly.
+
 ## [0.7.1] - 2026-04-07
 
 ### Added
