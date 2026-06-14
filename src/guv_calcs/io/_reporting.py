@@ -27,19 +27,41 @@ def _build_room_rows(room):
 
     # ───  Room parameters  ───────────────────────────────
     rows = [["Room Parameters"]]
-    rows += [["", "Dimensions", "x", "y", "z", "units"]]
     d = room.dim
-    rows += [["", "", fmt(d.x), fmt(d.y), fmt(d.z), d.units]]
-    vol_units = "ft 3" if room.units == "feet" else "m 3"
-    rows += [["", "Volume", fmt(room.volume), vol_units]]
+    if room.dim.is_polygon:
+        rows += [["", "Dimensions (Bounding Box)", "x", "y", "z", "units"]]
+        rows += [["", "", fmt(d.x), fmt(d.y), fmt(d.z), d.units]]
+        area_units = "ft 2" if room.units == "feet" else "m 2"
+        rows += [["", "Floor Area", fmt(room.polygon.area), area_units]]
+        vol_units = "ft 3" if room.units == "feet" else "m 3"
+        rows += [["", "Volume", fmt(room.volume), vol_units]]
+        rows += [["", "Polygon Footprint"]]
+        rows += [["", "", "Vertex", "x", "y"]]
+        for i, (px, py) in enumerate(room.polygon.vertices):
+            rows += [["", "", f"Vertex {i+1}", fmt(px), fmt(py)]]
+    else:
+        rows += [["", "Dimensions", "x", "y", "z", "units"]]
+        rows += [["", "", fmt(d.x), fmt(d.y), fmt(d.z), d.units]]
+        vol_units = "ft 3" if room.units == "feet" else "m 3"
+        rows += [["", "Volume", fmt(room.volume), vol_units]]
     rows += [[""]]
 
     # ───  Reflectance  ──────────────────────────────────
     rows += [["", "Reflectance"]]
-    rows += [["", "", "Floor", "Ceiling", "North", "South", "East", "West", "Enabled"]]
-    rows += [
-        ["", "", *[v.R for v in room.surfaces.values()], room.ref_manager.enabled]
-    ]
+    if room.dim.is_polygon:
+        surface_names = list(room.surfaces.keys())
+        def clean_surface_name(name):
+            return name.replace("_", " ").capitalize()
+        headers = ["", "", "Floor", "Ceiling"] + [clean_surface_name(name) for name in surface_names if name not in ("floor", "ceiling")] + ["Enabled"]
+        wall_values = [room.surfaces[name].R for name in surface_names if name not in ("floor", "ceiling")]
+        values_row = ["", "", room.surfaces["floor"].R, room.surfaces["ceiling"].R] + wall_values + [room.ref_manager.enabled]
+        rows += [headers]
+        rows += [values_row]
+    else:
+        rows += [["", "", "Floor", "Ceiling", "North", "South", "East", "West", "Enabled"]]
+        rows += [
+            ["", "", *[v.R for v in room.surfaces.values()], room.ref_manager.enabled]
+        ]
     rows += [[""]]
 
     # ───  Luminaires  ───────────────────────────────────

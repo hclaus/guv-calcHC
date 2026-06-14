@@ -269,6 +269,10 @@ class RoomPlotter:
         """plot a calculation plane"""
         zonecolor = self._set_color(select_id, zone.zone_id, zone.enabled)
         x, y, z = zone.coords.T
+        if self.room.is_polygon and (getattr(zone.geometry, 'ref_surface', None) == "xy" or getattr(zone.geometry, 'ref_surface', None) is None):
+            mask = np.array([self.room.dim.contains_point(px, py) for px, py in zip(x, y)])
+            x, y, z = x[mask], y[mask], z[mask]
+
         zonetrace = go.Scatter3d(
             x=x,
             y=y,
@@ -343,11 +347,19 @@ class RoomPlotter:
         else:
             # Regular grid - use Surface plot
             x, y, z = zone.coords.T.reshape(3, *zone.num_points)
+            surfacecolor = zone.values
+            if self.room.is_polygon and (getattr(zone.geometry, 'ref_surface', None) == "xy" or getattr(zone.geometry, 'ref_surface', None) is None):
+                surfacecolor = np.array(surfacecolor, dtype=float)
+                for i in range(x.shape[0]):
+                    for j in range(x.shape[1]):
+                        if not self.room.dim.contains_point(x[i, j], y[i, j]):
+                            surfacecolor[i, j] = np.nan
+
             zone_value_trace = go.Surface(
                 x=x,
                 y=y,
                 z=z,
-                surfacecolor=zone.values,
+                surfacecolor=surfacecolor,
                 colorscale=self.room.colormap,
                 showscale=False,
                 showlegend=True,
@@ -369,15 +381,23 @@ class RoomPlotter:
                     intensity=values,
                 )
             else:
+                surfacecolor = zone.values
+                if self.room.is_polygon and (getattr(zone.geometry, 'ref_surface', None) == "xy" or getattr(zone.geometry, 'ref_surface', None) is None):
+                    surfacecolor = np.array(surfacecolor, dtype=float)
+                    for i in range(x.shape[0]):
+                        for j in range(x.shape[1]):
+                            if not self.room.dim.contains_point(x[i, j], y[i, j]):
+                                surfacecolor[i, j] = np.nan
                 self._update_trace_by_id(
                     fig,
                     zone.zone_id,
                     x=x,
                     y=y,
                     z=z,
-                    surfacecolor=zone.values,
+                    surfacecolor=surfacecolor,
                 )
         return fig
+
 
     def _plot_point(self, zone, fig, select_id=None):
         """Plot a CalcPoint as a marker with a short normal-direction line."""

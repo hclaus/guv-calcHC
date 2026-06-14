@@ -295,6 +295,14 @@ class SurfaceGrid(_GridBase):
             return (self.num_x, self.num_y)
         return (len(self.coords),)
 
+    def values_to_grid(self, values: np.ndarray) -> np.ndarray:
+        """Map 1D values back to 2D grid shape (num_x, num_y) with np.nan for points outside the polygon."""
+        if self.is_rectangular:
+            return values.reshape(self.num_x, self.num_y)
+        full_values = np.full(self.num_x * self.num_y, np.nan)
+        full_values[self._xy_mask] = values.flatten()
+        return full_values.reshape(self.num_x, self.num_y)
+
     # ---- legacy dimensional properties for axis-aligned planes ----
 
     @property
@@ -659,6 +667,14 @@ class VolumeGrid(_GridBase):
         if self.is_rectangular:
             return (self.num_x, self.num_y, self.num_z)
         return (len(self.coords),)
+
+    def values_to_grid(self, values: np.ndarray) -> np.ndarray:
+        """Map 1D values back to 3D grid shape (num_x, num_y, num_z) with np.nan for points outside the polygon."""
+        if self.is_rectangular:
+            return values.reshape(self.num_x, self.num_y, self.num_z)
+        full_values = np.full(self.num_x * self.num_y * self.num_z, np.nan)
+        full_values[self._mask_full] = values.flatten()
+        return full_values.reshape(self.num_x, self.num_y, self.num_z)
 
     # ---- dimensional properties ----
 

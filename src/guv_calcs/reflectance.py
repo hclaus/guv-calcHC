@@ -232,8 +232,9 @@ class Surface:
     # -- stateless computation, called by LightingCalculator --
 
     def _calculate_values(self, form_factors, theta_zone, zv):
-
-        I_r = self.plane.values[:, :, np.newaxis, np.newaxis, np.newaxis]
+        k = len(self.plane.num_points)
+        idx = (slice(None),) * k + (np.newaxis,) * len(zv.num_points)
+        I_r = self.plane.values[idx]
 
         values = (I_r * form_factors).astype("float32")
 
@@ -245,7 +246,7 @@ class Surface:
             values = apply_plane_filters(values, theta_zone, zv)
 
         # Sum over all self.plane points to get total values at each volume point
-        values = np.sum(values, axis=(0, 1))  # Collapse the dimensions
+        values = np.sum(values, axis=tuple(range(k)))  # Collapse the dimensions
         return values.reshape(*zv.num_points)
 
     def _calculate_coordinates(self, zv):
@@ -258,9 +259,9 @@ class Surface:
         surface_points = self.plane.coords.reshape(*self.plane.num_points, 3)
         zone_points = zv.coords.reshape(*zv.num_points, 3)
 
-        differences = (
-            surface_points[:, :, np.newaxis, np.newaxis, np.newaxis, :] - zone_points
-        )
+        k = len(self.plane.num_points)
+        idx = (slice(None),) * k + (np.newaxis,) * len(zv.num_points) + (slice(None),)
+        differences = surface_points[idx] - zone_points
 
         # project into surface local frame: [u, v, normal]
         rel_surface = differences @ self.plane.basis
@@ -322,7 +323,7 @@ def init_room_surfaces(
     default_reflectances = {surface: 0.0 for surface in keys}
     default_transmittances = {surface: 0.0 for surface in keys}
     default_spacings = {surface: None for surface in keys}
-    default_nums = {surface: 10 for surface in keys}
+    default_nums = {surface: 10 if surface in ("floor", "ceiling") else 20 for surface in keys}
     # build what gets used
     reflectances = {**default_reflectances, **(reflectances or {})}
     transmittances = {**default_transmittances, **(transmittances or {})}

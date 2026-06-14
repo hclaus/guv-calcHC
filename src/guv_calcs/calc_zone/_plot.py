@@ -122,7 +122,10 @@ def plot_plane(zone, fig=None, ax=None, vmin=None, vmax=None, title=None, colorm
             v_positive = True
 
         # Transpose so rows=v, cols=u
-        plot_values = values.T
+        if hasattr(geom, 'values_to_grid'):
+            plot_values = geom.values_to_grid(values).T
+        else:
+            plot_values = values.T
 
         # Flip if v points in negative direction (so positive is at top)
         if not v_positive:
