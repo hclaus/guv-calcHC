@@ -290,6 +290,24 @@ class SurfaceGrid(_GridBase):
         return coords
 
     @property
+    def full_coords(self) -> np.ndarray:
+        """Coordinates for every (num_x, num_y) grid point, including points
+        outside the polygon for non-rectangular grids (unlike `coords`, which
+        only includes in-polygon points). Useful for exports/plots that need
+        to lay values out on the full rectangular grid (see `values_to_grid`).
+        """
+        if self.is_rectangular:
+            return self.coords
+        if self._cache.get("full_coords") is not None:
+            return self._cache["full_coords"]
+        mesh = np.meshgrid(self.axes[0].points, self.axes[1].points, indexing="ij")
+        s_vals, t_vals = [grid.reshape(-1) for grid in mesh]
+        origin = np.asarray(self.origin, float)
+        full_coords = origin + s_vals[:, None] * self.u_hat + t_vals[:, None] * self.v_hat
+        self._cache["full_coords"] = full_coords
+        return full_coords
+
+    @property
     def num_points(self) -> tuple:
         if self.is_rectangular:
             return (self.num_x, self.num_y)

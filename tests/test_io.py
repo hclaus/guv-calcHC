@@ -226,6 +226,34 @@ class TestRoomExportZip:
             names = zf.namelist()
             assert "room.guv" in names
 
+    def test_export_zip_polygon_room_plane_zone(self):
+        """export_zip should not crash for a Plane zone on a non-rectangular
+        (L-shaped) polygon room -- regression test for a reshape error where
+        export_plane assumed a full (num_x, num_y) grid even though
+        non-rectangular zones only compute values for in-polygon points.
+        """
+        import zipfile
+        import io
+        from guv_calcs.geometry import Polygon2D
+
+        l_shape = Polygon2D(vertices=(
+            (1.5, 0), (1.5, 1.5), (2.5, 1.5),
+            (2.5, 4), (0, 4), (0, 0),
+        ))
+        room = Room(polygon=l_shape, z=2.7).place_lamp("aerolamp")
+        room.add_standard_zones().calculate()
+        zip_bytes = room.export_zip(include_plots=True, include_report=True)
+
+        with zipfile.ZipFile(io.BytesIO(zip_bytes), 'r') as zf:
+            names = zf.namelist()
+            # Eye/Skin dose zones are Plane zones -- export_volume (used for
+            # the WholeRoomFluence Volume zone) isn't affected by this bug.
+            plane_csvs = [n for n in names if 'Dose' in n and n.endswith('.csv')]
+            assert len(plane_csvs) >= 2
+            # A masked (outside-polygon) point should show up as NaN, not crash.
+            csv_text = zf.read(plane_csvs[0]).decode('utf-8', errors='replace')
+            assert 'nan' in csv_text.lower()
+
     @pytest.mark.skip(reason="CalcVol plot export requires Chrome for kaleido")
     def test_export_zip_with_plots(self):
         """export_zip with include_plots=True should include plot images."""

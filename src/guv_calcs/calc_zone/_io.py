@@ -9,18 +9,28 @@ def export_plane(zone, fname=None):
     values = zone.get_values()
     if values is None:
         vals = [[-1] * num_y for _ in range(num_x)]
-    elif values.shape != (num_x, num_y):
-        vals = [[-1] * num_y for _ in range(num_x)]
-    else:
+    elif values.shape == (num_x, num_y):
         vals = values
-    zvals = zone.geometry.coords.T[2].reshape(num_x, num_y).T[::-1]
+    elif hasattr(zone.geometry, "values_to_grid"):
+        # Non-rectangular (polygon) zone: values only cover in-polygon
+        # points. Map them onto the full grid, filling outside-polygon
+        # points with NaN (matches the plotting code's convention).
+        vals = zone.geometry.values_to_grid(values)
+    else:
+        vals = [[-1] * num_y for _ in range(num_x)]
 
-    xpoints = zone.geometry.coords.T[0].reshape(num_x, num_y).T[0].tolist()
-    ypoints = zone.geometry.coords.T[1].reshape(num_x, num_y)[0].tolist()
+    # Use the full (unmasked) coordinate grid for axis labels / z-values --
+    # zone.geometry.coords only contains in-polygon points for non-rectangular
+    # zones, which doesn't reshape to (num_x, num_y).
+    coords = getattr(zone.geometry, "full_coords", zone.geometry.coords)
+    zvals = coords.T[2].reshape(num_x, num_y).T[::-1]
+
+    xpoints = coords.T[0].reshape(num_x, num_y).T[0].tolist()
+    ypoints = coords.T[1].reshape(num_x, num_y)[0].tolist()
 
     if len(np.unique(xpoints)) == 1 and len(np.unique(ypoints)) == 1:
-        xpoints = zone.geometry.coords.T[0].reshape(num_x, num_y)[0].tolist()
-        ypoints = zone.geometry.coords.T[1].reshape(num_x, num_y).T[0].tolist()
+        xpoints = coords.T[0].reshape(num_x, num_y)[0].tolist()
+        ypoints = coords.T[1].reshape(num_x, num_y).T[0].tolist()
         vals = np.array(vals).T.tolist()
         zvals = zvals.T.tolist()
 
