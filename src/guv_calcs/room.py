@@ -761,8 +761,25 @@ class Room:
             if len(self.lamps) == 0:
                 msg = "No lamps are present in the room."
             warnings.warn(msg, stacklevel=3)
+        else:
+            self._warn_excluded_lamps(valid_lamps)
 
         return self
+
+    def _warn_excluded_lamps(self, valid_lamps):
+        """Warn about individual enabled lamps missing photometric data.
+
+        Only called when at least one lamp IS valid--otherwise the room-level
+        "no valid lamps" warning in calculate() already covers it.
+        """
+        for lamp_id, lamp in self.lamps.items():
+            if lamp.enabled and lamp_id not in valid_lamps:
+                preset_note = f" (preset_id={lamp.preset_id!r})" if lamp.preset_id else ""
+                msg = (
+                    f"Lamp {lamp_id!r}{preset_note} has no photometric data loaded "
+                    "and will not contribute to calculations."
+                )
+                warnings.warn(msg, stacklevel=4)
 
     def calculate_by_id(self, zone_id, hard=False):
         """Calculate just the calc zone selected."""

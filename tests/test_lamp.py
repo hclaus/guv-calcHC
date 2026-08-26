@@ -225,6 +225,56 @@ class TestLampSerialization:
         lamp2.ies = None
         assert lamp1 == lamp2
 
+    def test_from_dict_recovers_ies_from_preset_id(self):
+        """A saved lamp dict with preset_id set but no embedded filedata/
+        spectrum (e.g. a stripped or hand-edited .guv file) should have its
+        photometric and spectral data recovered from the bundled preset on
+        load, rather than silently ending up with ies=None."""
+        data = {
+            "lamp_id": "Lamp2",
+            "name": "Lamp 1",
+            "x": 3.8, "y": 2.4, "z": 3.33,
+            "angle": 0.0, "aimx": 3.8, "aimy": 2.4, "aimz": 0.5,
+            "intensity_units": "mw/sr",
+            "guv_type": "krcl",
+            "wavelength": 222.0,
+            "width": None, "length": None, "height": None,
+            "units": "meters",
+            "source_density": 1,
+            "scaling_factor": 1.0,
+            "intensity_map": None,
+            "enabled": True,
+            "preset_id": "uvpro222_b1",
+            "surface": {
+                "width": 0.06, "length": 0.045, "height": 0.0,
+                "units": "meters", "source_density": 1, "intensity_map": None,
+                "_user_width": None, "_user_length": None,
+                "_user_height": None, "_user_units": "meters",
+            },
+            "fixture": {
+                "housing_width": 0.1, "housing_length": 0.155,
+                "housing_height": 0.105, "shape": "rectangular",
+            },
+        }
+        loaded = Lamp.from_dict(data)
+        assert loaded.ies is not None
+        assert loaded.spectrum is not None
+        assert loaded.preset_id == "uvpro222_b1"
+        # Position/geometry from the saved dict must be preserved, not overwritten by preset defaults
+        assert loaded.x == 3.8
+        assert loaded.y == 2.4
+
+    def test_from_dict_unresolvable_preset_id_leaves_ies_none(self):
+        """An unrecognized preset_id shouldn't raise; it should just leave
+        ies=None so the lamp is excluded from calculation as before."""
+        data = {
+            "lamp_id": "Lamp3",
+            "x": 0.0, "y": 0.0, "z": 0.0,
+            "preset_id": "some_discontinued_lamp_not_in_catalog",
+        }
+        loaded = Lamp.from_dict(data)
+        assert loaded.ies is None
+
 
 class TestLampSurface:
     """Tests for lamp surface properties."""
